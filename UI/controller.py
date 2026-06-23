@@ -11,7 +11,9 @@ class Controller:
         self._model = model
 
     def fillDD(self):
-        valoriDD = list(map(lambda x: ft.dropdown.Option(x), self._model.getShape()))
+        shapes = self._model.getShape()
+        shapes.sort(reverse=True)
+        valoriDD = list(map(lambda x: ft.dropdown.Option(x), shapes))
         self._view.ddshape.options = valoriDD
 
 
@@ -50,36 +52,42 @@ class Controller:
             self._view.update_page()
             return
 
-        if lat > max[0]:
-            self._view.txt_result1.controls.append(ft.Text("Errore, hai superato la soglia massima di latitudine",
+        if lat > max[0] or lat < max[1]:
+            self._view.txt_result1.controls.append(ft.Text(f"La latitudine deve essere un valore numerico compreso tra {max[1]} e {max[0]}",
                                                        color="red"))
             self._view.update_page()
             return
 
-        if lat < max[1]:
-            self._view.txt_result1.controls.append(ft.Text("Errore, hai superato la soglia minima di latitudine",
-                                                       color="red"))
-            self._view.update_page()
-            return
-
-        if lng > max[2]:
-            self._view.txt_result1.controls.append(ft.Text("Errore, hai superato la soglia massima di longitudine",
-                                                       color="red"))
-            self._view.update_page()
-            return
-
-        if lng > max[3]:
-            self._view.txt_result1.controls.append(ft.Text("Errore, hai superato la soglia minima di latitudine",
+        if lng > max[2] or lng < max[3]:
+            self._view.txt_result1.controls.append(ft.Text(f"La longitudine deve essere un valore numerico compreso tra {max[3]} e {max[2]}",
                                                        color="red"))
             self._view.update_page()
             return
 
         self._model.creaGrafo(lat, lng, shape)
+        Nnodi, Narchi = self._model.getGraphDetails()
+
+        self._view.txt_result1.controls.append(ft.Text(f"numero di vertici: {Nnodi}", color="green"))
+        self._view.txt_result1.controls.append(ft.Text(f"numero di archi: {Narchi}", color="green"))
+
+        bestNodi, bestArchi = self._model.getBest()
+        self._view.txt_result1.controls.append(ft.Text(f"I 5 nodi di grado maggiore sono:"))
+
+        for n in bestNodi:
+            self._view.txt_result1.controls.append(ft.Text(f"{n[0]} -> degree: {n[1]}"))
+
+        self._view.txt_result1.controls.append(ft.Text(f"I 5 archi di peso maggiore sono:"))
+
+        for n in bestArchi:
+            self._view.txt_result1.controls.append(ft.Text(f"{n[0]} <-> {n[1]} | peso = {n[2]["weight"]}"))
+
+        self._view.btn_path.disabled = False
+
         self._view.update_page()
 
 
     def handle_path(self, e):
-        pass
+        self._view.txt_result2.controls.clear()
+        self._model.bestPath()
 
-    def fill_ddshape(self):
-        pass
+
