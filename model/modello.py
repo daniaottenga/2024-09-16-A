@@ -61,30 +61,33 @@ class Model:
 
         for n in self._nodes:
             parziale = [n]
-            self.ricorsione(parziale, 1)
+            self.ricorsione(parziale)
             parziale.pop()
 
         return
 
 
-    def ricorsione(self, parziale, indice):
+    def ricorsione(self, parziale):
         if len(parziale) > 1:
             punt = self.punteggio(parziale)
             if punt > self._optCost:
                 self._optCost = punt
                 self._optPath = copy.deepcopy(parziale)
 
-        for i in range(indice, len(self._nodes)-1):
-            parziale.append(self._nodes[i])
-            self.ricorsione(parziale, indice+1)
-            parziale.pop()
+        vicini = self._grafo.neighbors(parziale[-1])
+        vicini.sort(key=lambda x: x.Population / x.Area)
+        for v in vicini:
+            if v.Population / v.Area > parziale[-1].Population / parziale[-1].Area:
+                parziale.append(v)
+                self.ricorsione(parziale)
+                parziale.pop()
 
 
     def punteggio(self, parziale):
         pesi = 0
         distanza = 0
         for i in range(len(parziale)-1):
-            pesi += self._grafo[parziale[i]][parziale[i+1]["weight"]]
+            pesi += self._grafo[parziale[i]][parziale[i+1]]["weight"]
             distanza += parziale[i].distance_HV(parziale[i+1])
 
         return pesi / distanza
